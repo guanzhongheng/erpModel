@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hh.ssm.dao.InventoryMapper">
+
+    <resultMap id="inventoryResultMap" type="com.hh.ssm.entity.Inventory">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="prod_name" property="prodName" jdbcType="VARCHAR"/>
+        <result column="prod_code" property="prodCode" jdbcType="VARCHAR"/>
+        <result column="quantity" property="quantity" jdbcType="INTEGER"/>
+        <result column="usable_quantity" property="usableQuantity" jdbcType="INTEGER"/>
+        <result column="threshold" property="threshold" jdbcType="VARCHAR"/>
+        <result column="unit" property="unit" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+
+    <select id="get" resultMap="inventoryResultMap">
+        SELECT *
+        FROM inventory
+        WHERE id = #{id}
+    </select>
+
+    <select id="findRawMaterList" parameterType="com.hh.ssm.domain.vo.RawMaterialVO"
+            resultType="com.hh.ssm.domain.vo.RawMaterialVO">
+        SELECT
+        iy.id,
+        iy.threshold,
+        rm.`code`,
+        rm.`name`,
+        iy.unit,
+        rm.supplier,
+        iy.quantity invTotal,
+        iy.usable_quantity avaInvTotal,
+        rm.attachment
+        FROM
+        raw_material rm
+        LEFT JOIN inventory iy ON iy.prod_code = rm.`code`
+        <where>
+            <if test="name!=null">
+                rm.name LIKE concat(concat('%', #{name,jdbcType=VARCHAR}), '%')
+            </if>
+            <if test="supplier!=null">
+                and rm.supplier LIKE concat(concat('%', #{supplier,jdbcType=VARCHAR}), '%')
+            </if>
+            <if test="code!=null">
+                and rm.code LIKE concat(concat('%', #{code,jdbcType=VARCHAR}), '%')
+            </if>
+            <if test="flg!=null and flg==1">
+                and iy.id is not null
+            </if>
+        </where>
+
+    </select>
+
+    <select id="findList" parameterType="java.util.Map"
+            resultType="com.hh.ssm.domain.vo.InventoryVo">
+        select
+        iy.id 'id',
+        dd.prod_code 'proCode',
+        dd.proName,
+        dd.deleveyDate,
+        dd.contId,
+        iy.quantity 'invTotal',
+        iy.usable_quantity 'avaInvTotal',
+        iy.unit,
+        dd.conCode,
+        dd.conNeedTotal,
+        dd.conUnShipTotal
+        from (
+        SELECT
+        cd.prod_code,
+        c.`code` 'conCode',
+        c.id 'contId',
+        c.delevey_date 'deleveyDate',
+        cd.prod_name proName,
+        cd.quantity 'conNeedTotal',
+        cd.un_quantity 'conUnShipTotal'
+        FROM
+        contract c,
+        contract_detail cd
+        WHERE
+        c.id = cd.cont_id
+        <if test="contId!=null">
+            and c.id = #{contId}
+        </if>
+        and c.`status`=1
+        ) dd LEFT JOIN inventory iy on dd.prod_code=iy.prod_code
+        <if test="flg!=null and flg==1">
+            where iy.id is not null
+        </if>
+
+    </select>
+
+    <select id="findAllList" resultMap="inventoryResultMap">
+        SELECT *
+        FROM inventory
+    </select>
+
+    <insert id="insert" parameterType="com.hh.ssm.entity.Inventory">
+        INSERT INTO inventory(
+            id,
+            prod_name,
+            prod_code,
+            quantity,
+            usable_quantity,
+            threshold,
+            unit,
+            create_time,
+            update_time
+        )
+        VALUES (
+            #{id,jdbcType=BIGINT},
+            #{prodName,jdbcType=VARCHAR},
+            #{prodCode,jdbcType=VARCHAR},
+            #{quantity,jdbcType=INTEGER},
+            #{usableQuantity,jdbcType=INTEGER},
+            #{threshold,jdbcType=VARCHAR},
+            #{unit,jdbcType=VARCHAR},
+            #{createTime,jdbcType=TIMESTAMP},
+            #{updateTime,jdbcType=TIMESTAMP}
+        )
+    </insert>
+
+    <insert id="insertOrUpdateByBatch" parameterType="java.util.List">
+        insert into inventory (
+        id,
+        prod_name,
+        prod_code,
+        quantity,
+        usable_quantity,
+        threshold,
+        unit,
+        create_time,
+        update_time
+        )
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.id,jdbcType=BIGINT},
+            #{item.prodName,jdbcType=VARCHAR},
+            #{item.prodCode,jdbcType=VARCHAR},
+            #{item.quantity,jdbcType=INTEGER},
+            #{item.usableQuantity,jdbcType=INTEGER},
+            #{item.threshold,jdbcType=VARCHAR},
+            #{item.unit,jdbcType=VARCHAR},
+            #{item.createTime,jdbcType=TIMESTAMP},
+            #{item.updateTime,jdbcType=TIMESTAMP}
+            )
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        quantity=quantity+VALUES(quantity),
+        usable_quantity=usable_quantity+VALUES(usable_quantity),
+        update_time=VALUES(update_time);
+    </insert>
+
+    <insert id="insertBatch" parameterType="com.hh.ssm.entity.Inventory">
+        INSERT INTO inventory(
+        id,
+        prod_name,
+        prod_code,
+        quantity,
+        usable_quantity,
+        threshold,
+        unit,
+        create_time
+        )
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.id,jdbcType=CHAR},
+            #{item.prodName,jdbcType=VARCHAR},
+            #{item.prodCode,jdbcType=VARCHAR},
+            #{item.quantity,jdbcType=INTEGER},
+            #{item.usableQuantity,jdbcType=INTEGER},
+            #{item.threshold,jdbcType=VARCHAR},
+            #{item.unit,jdbcType=VARCHAR},
+            #{item.createTime,jdbcType=TIMESTAMP}
+            )
+        </foreach>
+    </insert>
+
+    <update id="update" parameterType="com.hh.ssm.entity.Inventory">
+        UPDATE inventory
+        <set>
+            <if test="quantity!=null and quantity!=0">
+                quantity = quantity + #{quantity,jdbcType=INTEGER},
+                usable_quantity = usable_quantity + #{usableQuantity,jdbcType=INTEGER},
+            </if>
+            <if test="threshold!=null">
+                threshold = #{threshold,jdbcType=VARCHAR},
+            </if>
+            <if test="unit!=null">
+                unit = #{unit,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime!=null">
+                update_time = #{updateTime}
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateThresholdByBatch" parameterType="java.util.List">
+        update inventory
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="threshold =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.threshold!=null">
+                        when id = #{i.id} then #{i.threshold}
+                    </if>
+                </foreach>
+            </trim>
+
+            <trim prefix="update_time =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.updateTime!=null">
+                        when id = #{i.id} then #{i.updateTime}
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where
+        <foreach collection="list" separator="or" item="i" index="index">
+            id = #{i.id}
+        </foreach>
+    </update>
+
+    <delete id="delete" parameterType="com.hh.ssm.entity.Inventory">
+        DELETE FROM inventory
+        WHERE id = #{id}
+    </delete>
+
+    <select id="findRawCheckoutDetail" resultType="com.hh.ssm.domain.vo.RawmaterCheckoutDetailVo"
+            parameterType="java.lang.String">
+        SELECT
+            dd.id,
+            dd.rawmt_out_code rawmtOutCode,
+            dd.`code` rawCode,
+            dd.NAME rawName,
+            dd.supplier rawSupplier,
+            dd.out_num outNum,
+            dd.out_num operOutNum,
+            iy.quantity rawInvTotal,
+            iy.id invId,
+            iy.unit rawUnit
+        FROM
+            (
+            SELECT
+                ro.id,
+                ro.rawmt_out_code,
+                ro.out_num,
+                rm.`code`,
+                rm.`name`,
+                rm.supplier
+            FROM
+                rawmt_out_detail_info ro
+                LEFT JOIN raw_material rm ON ro.raw_code = rm.`code`
+                where ro.rawmt_out_code=#{rawmtOutCode,jdbcType=VARCHAR}
+            ) dd
+            LEFT JOIN inventory iy ON iy.prod_code = dd.CODE
+
+    </select>
+
+
+    <update id="updateInvNumByBatch" parameterType="java.util.List">
+        update inventory
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="quantity =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.quantity!=null">
+                        when id = #{i.id} then quantity+#{i.quantity}
+                    </if>
+                </foreach>
+            </trim>
+
+            <trim prefix="usable_quantity =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.usableQuantity!=null">
+                        when id = #{i.id} then usable_quantity+ #{i.usableQuantity}
+                    </if>
+                </foreach>
+            </trim>
+
+            <trim prefix="update_time =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.updateTime!=null">
+                        when id = #{i.id} then #{i.updateTime}
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where
+        <foreach collection="list" separator="or" item="i" index="index">
+            id = #{i.id}
+        </foreach>
+    </update>
+
+    <select id="getProdInventory" parameterType="java.util.List" resultMap="inventoryResultMap">
+        select * from inventory where prod_code in
+        <foreach item="code" collection="list" open="(" close=")" separator=",">
+            #{code}
+        </foreach>
+    </select>
+
+    <update id="updateBatchUsableQuantity" parameterType="java.util.List">
+        update inventory
+        <trim prefix="usable_quantity =case" suffix="end,">
+            <foreach collection="list" item="i" index="index">
+                <if test="i.usableQuantity!=null">
+                    when id = #{i.id} then #{i.usableQuantity}
+                </if>
+            </foreach>
+        </trim>
+        where
+        <foreach collection="list" separator="or" item="i" index="index">
+            id = #{i.id}
+        </foreach>
+    </update>
+
+</mapper>

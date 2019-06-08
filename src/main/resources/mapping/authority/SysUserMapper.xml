@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hh.ssm.mapper.authority.SysUserMapper" >
+  <resultMap id="BaseResultMap" type="sysUser" >
+    <id column="USER_ID" property="id" jdbcType="VARCHAR" />
+    <result column="USER_NAME" property="username" jdbcType="VARCHAR" />
+    <result column="USER_NUMBER" property="userNumber" jdbcType="VARCHAR" />
+      <result column="PASSWORD" property="password" jdbcType="VARCHAR" />
+      <result column="NAME" property="name" jdbcType="VARCHAR" />
+      <result column="LAST_LOGIN" property="lastLogin" jdbcType="VARCHAR" />
+      <result column="IP" property="ip" jdbcType="VARCHAR" />
+      <result column="STATUS" property="status" jdbcType="CHAR" />
+      <result column="BZ" property="bz" jdbcType="VARCHAR" />
+      <result column="EMAIL" property="eMail" jdbcType="VARCHAR" />
+      <result column="NUMBER" property="number" jdbcType="VARCHAR" />
+      <result column="PHONE" property="phone" jdbcType="VARCHAR" />
+      <result column="CREATE_TIME" property="createTime" jdbcType="VARCHAR" />
+      <result column="UPDATE_TIME" property="updateTime" jdbcType="VARCHAR" />
+      <result column="LOSE_TIME" property="loseTime" jdbcType="VARCHAR" />
+  </resultMap>
+  <resultMap id="UserVORM" type="com.hh.ssm.domain.vo.UserVO" extends="BaseResultMap">
+    <result column="ROLE_NAME" property="roleName" jdbcType="VARCHAR" />
+    <result column="ROLE_ID" property="roleId" jdbcType="VARCHAR" />
+  </resultMap>
+
+
+    <sql id="Base_Column_List" >
+      USER_ID,USER_NAME,USER_NUMBER,PASSWORD,NAME,LAST_LOGIN,IP,STATUS,BZ,EMAIL,NUMBER,PHONE,DEL_FLAG,CREATE_TIME,UPDATE_TIME,LOSE_TIME
+    </sql>
+
+    <select id="selectByUserAccount" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        from sys_user
+        where user_name = #{userAccount}
+
+    </select>
+
+  	<!-- 扩展的sql -->
+	<!-- 查询所有记录 -->
+	<select id="find" parameterType="sysUser" resultMap="UserVORM">
+		SELECT
+			sys_user.*,
+			sys_role.role_id,
+			sys_role.role_name
+		FROM
+			sys_user
+		LEFT JOIN sys_user_role ON sys_user_id = sys_user.user_id
+		LEFT JOIN sys_role ON sys_role_id = sys_role.role_id
+        where 1 = 1
+        <if test="id != null" >
+            and user_id = #{id}
+        </if>
+        <if test="username != null" >
+          and user_name = #{username}
+        </if>
+        <if test="userNumber != null" >
+          and user_number = #{userNumber}
+        </if>
+        <if test="roleId != null and roleId > 0" >
+          and role_id = #{roleId}
+        </if>
+	</select>
+
+    <select id="search" parameterType="sysUser" resultMap="UserVORM">
+        SELECT
+        *
+        FROM
+        sys_user
+        where 1 = 1
+        <if test="id != null" >
+            and user_id = #{id}
+        </if>
+        <if test="username != null" >
+            and user_name = #{username}
+        </if>
+        <if test="userNumber != null" >
+            and user_number = #{userNumber}
+        </if>
+    </select>
+
+
+
+	<!-- 批量删除 -->
+	<delete id="deleteBatch">
+		DELETE
+		FROM
+			sys_user
+		WHERE
+			sys_user.user_id IN
+		<foreach collection="array" item="id" open="(" close=")" separator=",">
+			#{id}
+		</foreach>
+	</delete>
+	
+	<!-- 修改状态，批量启用停用-->
+	<update id="changeStatus">
+		UPDATE c_order
+		SET status = #{status}
+		WHERE
+			order_id IN
+		<foreach collection="ids" item="id" open="(" close=")" separator=",">
+			#{id}
+		</foreach>
+	</update>
+	
+	<select id="searchUserByUserId" parameterType="string" resultMap="UserVORM">
+		SELECT
+			sys_user.id,
+			username,
+			password,
+			locked,
+			role_id,
+			role_name
+		FROM
+			sys_user
+		LEFT JOIN sys_user_role ON sys_user_id = sys_user.id
+		LEFT JOIN sys_role ON sys_role_id = sys_role.role_id
+		WHERE
+			sys_user.id LIKE CONCAT(
+				'%',
+				#{userId},'%' ) 
+	</select>
+	
+	<select id="searchUserByUserName" parameterType="string" resultMap="UserVORM">
+		SELECT
+			sys_user.id,
+			username,
+			password,
+			locked,
+			role_id,
+			role_name
+		FROM
+			sys_user
+		LEFT JOIN sys_user_role ON sys_user_id = sys_user.id
+		LEFT JOIN sys_role ON sys_role_id = sys_role.role_id
+		WHERE
+			username LIKE CONCAT(
+				'%',
+				#{userName},'%' ) 
+	</select>
+	
+	<select id="searchUserByRoleName" parameterType="string" resultMap="UserVORM">
+		SELECT
+			sys_user.id,
+			username,
+			password,
+			locked,
+			role_id,
+			role_name
+		FROM
+			sys_user
+		LEFT JOIN sys_user_role ON sys_user_id = sys_user.id
+		LEFT JOIN sys_role ON sys_role_id = sys_role.role_id
+		WHERE
+			role_name LIKE CONCAT(
+				'%',
+				#{roleName},'%' ) 
+	</select>
+
+  <sql id="Example_Where_Clause" >
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause" >
+    <where >
+      <foreach collection="example.oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+
+  <select id="selectByExample" resultMap="BaseResultMap" parameterType="sysUserExample" >
+    select
+    <if test="distinct" >
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from sys_user
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from sys_user
+    where user_id = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from sys_user
+    where user_id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <delete id="deleteByExample" parameterType="sysUserExample" >
+    delete from sys_user
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="sysUser" >
+    insert into sys_user (user_id, user_name,user_number, password,name,status,bz,email,
+    number,phone,create_time,lose_time)
+    values (#{id,jdbcType=VARCHAR}, #{username,jdbcType=VARCHAR},#{userNumber,jdbcType=VARCHAR},
+    #{password,jdbcType=VARCHAR},#{name,jdbcType=VARCHAR},#{status,jdbcType=CHAR},#{bz,jdbcType=VARCHAR},
+    #{email,jdbcType=VARCHAR},#{number,jdbcType=VARCHAR},#{phone,jdbcType=VARCHAR},
+    now(),#{dateLoseTime})
+  </insert>
+  <insert id="insertSelective" parameterType="sysUser" >
+    insert into sys_user
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="username != null" >
+        username,
+      </if>
+      <if test="password != null" >
+        password,
+      </if>
+      <if test="locked != null" >
+        locked,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="username != null" >
+        #{username,jdbcType=VARCHAR},
+      </if>
+      <if test="password != null" >
+        #{password,jdbcType=VARCHAR},
+      </if>
+      <if test="locked != null" >
+        #{locked,jdbcType=CHAR},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="sysUserExample" resultType="java.lang.Integer" >
+    select count(*) from sys_user
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map" >
+    update sys_user
+    <set >
+      <if test="record.id != null" >
+        id = #{record.id,jdbcType=VARCHAR},
+      </if>
+      <if test="record.username != null" >
+        username = #{record.username,jdbcType=VARCHAR},
+      </if>
+      <if test="record.password != null" >
+        password = #{record.password,jdbcType=VARCHAR},
+      </if>
+      <if test="record.locked != null" >
+        locked = #{record.locked,jdbcType=CHAR},
+      </if>
+    </set>
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map" >
+    update sys_user
+    set id = #{record.id,jdbcType=VARCHAR},
+      username = #{record.username,jdbcType=VARCHAR},
+      password = #{record.password,jdbcType=VARCHAR},
+      locked = #{record.locked,jdbcType=CHAR}
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="sysUser" >
+    update sys_user
+    <set >
+      <if test="username != null" >
+        user_number = #{username,jdbcType=VARCHAR},
+      </if>
+      <if test="password != null" >
+        password = #{password,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        status = #{status,jdbcType=CHAR},
+      </if>
+      <if test="dateLoseTime != null" >
+        loseTime = #{dateLoseTime}
+      </if>
+    </set>
+    where user_id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="sysUser" >
+    update sys_user
+    set user_number = #{userNumber,jdbcType=VARCHAR},
+      password = #{password,jdbcType=VARCHAR},
+      status = #{status,jdbcType=CHAR},
+      lose_time = #{dateLoseTime}
+    where user_id = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

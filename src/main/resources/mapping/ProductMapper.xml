@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hh.ssm.dao.ProductMapper">
+
+    <resultMap id="productResultMap" type="com.hh.ssm.entity.Product">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="code" property="code" jdbcType="VARCHAR"/>
+        <result column="type" property="type" jdbcType="CHAR"/>
+        <result column="specification" property="specification" jdbcType="VARCHAR"/>
+        <result column="attachment" property="attachment" jdbcType="VARCHAR"/>
+        <result column="semi_prod_cons" property="semiProdCons" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="category" property="category" jdbcType="CHAR"/>
+    </resultMap>
+
+    <select id="get" resultMap="productResultMap">
+        SELECT *
+        FROM product
+        WHERE id = #{id}
+    </select>
+
+    <select id="findList" parameterType="com.hh.ssm.entity.Product" resultMap="productResultMap">
+        SELECT *
+        FROM product
+        <where>
+            <if test="code != null">
+                and code like concat(concat('%', #{code}), '%')
+            </if>
+            <if test="name != null">
+                and name like concat(concat('%', #{name}), '%')
+            </if>
+            <if test="type != null  and type != 'a'">
+                and type = #{type}
+            </if>
+            <if test="specification != null">
+                and specification like concat(concat('%', #{specification}), '%')
+            </if>
+            <if test="category != null">
+                and category like concat(concat('%', #{category}), '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="findAllList" resultMap="productResultMap">
+        SELECT *
+        FROM product
+    </select>
+
+    <insert id="insert" parameterType="com.hh.ssm.entity.Product">
+        <selectKey keyProperty="id" resultType="java.lang.Long" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        INSERT INTO product(
+        name,
+        code,
+        type,
+        specification,
+        attachment,
+        semi_prod_cons,
+        create_time,
+        update_time,
+        category
+        )
+        VALUES (
+        #{name,jdbcType=VARCHAR},
+        #{code,jdbcType=VARCHAR},
+        #{type,jdbcType=CHAR},
+        #{specification,jdbcType=VARCHAR},
+        #{attachment,jdbcType=VARCHAR},
+        #{semiProdCons,jdbcType=VARCHAR},
+        #{createTime,jdbcType=TIMESTAMP},
+        #{updateTime,jdbcType=TIMESTAMP},
+        #{category,jdbcType=CHAR}
+        )
+    </insert>
+
+    <insert id="insertBatch" parameterType="com.hh.ssm.entity.Product">
+        <selectKey resultType="long" keyProperty="id" order="AFTER">
+            SELECT
+            LAST_INSERT_ID()
+        </selectKey>
+        INSERT INTO product(
+        name,
+        code,
+        type,
+        specification,
+        attachment,
+        semi_prod_cons,
+        create_time,
+        update_time,
+        category
+        )
+        VALUES
+        <foreach collection="list" item="product" index="index" separator=",">
+            (
+            #{product.name,jdbcType=VARCHAR},
+            #{product.code,jdbcType=VARCHAR},
+            #{product.type,jdbcType=CHAR},
+            #{specification,jdbcType=VARCHAR},
+            #{product.attachment,jdbcType=VARCHAR},
+            #{product.semiProdCons,jdbcType=VARCHAR},
+            #{product.createTime,jdbcType=TIMESTAMP},
+            #{product.updateTime,jdbcType=TIMESTAMP},
+            #{product.category,jdbcType=CHAR}
+            )
+        </foreach>
+    </insert>
+
+    <update id="update" parameterType="com.hh.ssm.entity.Product">
+        UPDATE product
+        SET
+        <if test="name!=null">
+            name = #{name},
+        </if>
+        <if test="code!=null">
+            code = #{code},
+        </if>
+        <if test="type!=null">
+            type = #{type},
+        </if>
+        <if test="specification!=null">
+            specification = #{specification},
+        </if>
+        <if test="attachment!=null">
+            attachment = #{attachment},
+        </if>
+        <if test="semi_prod_cons">
+            semi_prod_cons = #{semiProdCons},
+        </if>
+        <if test="updateTime!=null">
+            update_time = #{updateTime}
+        </if>
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateBatchById" parameterType="java.util.List">
+        update product
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="name =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.name!=null">
+                        when id=#{i.id} then #{i.name}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="code =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.code!=null">
+                        when id=#{i.id} then #{i.code}
+                    </if>
+                </foreach>
+            </trim>
+
+            <trim prefix="UPDATE_TIME =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.updateTime!=null">
+                        when id=#{i.id} then #{i.updateTime}
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where
+        <foreach collection="list" separator="or" item="i" index="index">
+            id=#{i.id}
+        </foreach>
+
+    </update>
+
+    <delete id="delete" parameterType="com.hh.ssm.entity.Product">
+        DELETE FROM product
+        WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteBatch" parameterType="java.util.List">
+        delete from product where id in
+        <foreach item="id" collection="list" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="findListByIds" parameterType="java.util.List" resultMap="productResultMap">
+        select * from product where id in
+        <foreach item="id" collection="list" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="find" parameterType="com.hh.ssm.entity.Product" resultMap="productResultMap">
+        select * from product where name = #{name} and code = #{code} and specification = #{specification}
+    </select>
+
+</mapper>

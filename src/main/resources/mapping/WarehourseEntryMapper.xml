@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hh.ssm.dao.WarehourseEntryMapper">
+
+    <resultMap id="warehourseEntryResultMap" type="com.hh.ssm.entity.WarehourseEntry">
+        <id column="id" property="id" jdbcType="BIGINT"/> 
+        <result column="prod_id" property="prodId" jdbcType="BIGINT"/> 
+        <result column="prod_type" property="prodType" jdbcType="CHAR"/>
+        <result column="supplier" property="supplier" jdbcType="CHAR"/>
+        <result column="oqa_status" property="oqaStatus" jdbcType="CHAR"/>
+        <result column="oqa_user" property="oqaUser" jdbcType="VARCHAR"/>
+        <result column="prod_manager" property="prodManager" jdbcType="VARCHAR"/>
+        <result column="quantity" property="quantity" jdbcType="INTEGER"/> 
+        <result column="create_user" property="createUser" jdbcType="VARCHAR"/> 
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/> 
+    </resultMap>
+
+
+    <select id="get" resultMap="warehourseEntryResultMap">
+        SELECT *
+        FROM warehourse_entry
+        WHERE id = #{id}
+    </select>
+
+    <select id="findList" resultMap="warehourseEntryResultMap">
+        SELECT *
+        FROM warehourse_entry
+    </select>
+
+    <select id="findAllList" resultMap="warehourseEntryResultMap">
+        SELECT *
+        FROM warehourse_entry
+    </select>
+
+    <insert id="insert" parameterType ="com.hh.ssm.entity.WarehourseEntry">
+        INSERT INTO warehourse_entry(
+            id,
+            prod_id,
+            prod_type,
+            oqa_status,
+            oqa_user,
+            prod_manager,
+            quantity,
+            create_user,
+            create_time
+        )
+        VALUES (
+            #{id,jdbcType=BIGINT},
+            #{prodId,jdbcType=BIGINT},
+            #{prodType,jdbcType=CHAR},
+            #{oqaStatus,jdbcType=CHAR},
+            #{oqaUser,jdbcType=VARCHAR},
+            #{prodManager,jdbcType=VARCHAR},
+            #{quantity,jdbcType=INTEGER},
+            #{createUser,jdbcType=VARCHAR},
+            #{createTime,jdbcType=TIMESTAMP}
+        )
+    </insert>
+
+    <insert id="insertBatch" parameterType="com.hh.ssm.entity.WarehourseEntry">
+        INSERT INTO warehourse_entry(
+            id,
+            prod_id,
+            prod_type,
+            oqa_status,
+            oqa_user,
+            prod_manager,
+            quantity,
+            create_user,
+            create_time
+        )
+        VALUES
+        <foreach collection ="list" item="warehourseEntry" separator =",">
+        (
+            #{warehourseEntry.id,jdbcType=BIGINT},
+            #{warehourseEntry.prodId,jdbcType=BIGINT},
+            #{warehourseEntry.prodType,jdbcType=CHAR},
+            #{warehourseEntry.oqaStatus,jdbcType=CHAR},
+            #{warehourseEntry.oqaUser,jdbcType=VARCHAR},
+            #{warehourseEntry.quantity,jdbcType=INTEGER},
+            #{warehourseEntry.prodManager,jdbcType=VARCHAR},
+            #{warehourseEntry.createUser,jdbcType=VARCHAR},
+            #{warehourseEntry.createTime,jdbcType=TIMESTAMP}
+        )
+        </foreach>
+    </insert>
+
+    <update id="update"  parameterType ="com.hh.ssm.entity.WarehourseEntry">
+        UPDATE warehourse_entry
+        SET
+        id = #{id},
+        prod_id = #{prodId},
+        prod_type = #{prodType},
+        prod_manager = #{prodManager},
+        oqa_status = #{oqaStatus},
+        oqa_user = #{oqaUser},
+        quantity = #{quantity},
+        create_user = #{createUser},
+        create_time = #{createTime}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete"  parameterType ="com.hh.ssm.entity.WarehourseEntry">
+        DELETE FROM warehourse_entry
+        WHERE id = #{id}
+    </delete>
+
+</mapper>

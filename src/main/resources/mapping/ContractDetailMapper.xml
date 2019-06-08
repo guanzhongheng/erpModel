@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hh.ssm.dao.ContractDetailMapper">
+
+    <resultMap id="contractDetailResultMap" type="com.hh.ssm.entity.ContractDetail">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="cont_id" property="contId" jdbcType="BIGINT"/>
+        <result column="prod_id" property="prodId" jdbcType="BIGINT"/>
+        <result column="prod_type" property="prodType" jdbcType="CHAR"/>
+        <result column="prod_code" property="prodCode" jdbcType="VARCHAR"/>
+        <result column="prod_unit" property="prodUnit" jdbcType="VARCHAR"/>
+        <result column="prod_name" property="prodName" jdbcType="VARCHAR"/>
+        <result column="specification" property="specification" jdbcType="VARCHAR"/>
+        <result column="prod_manager" property="prodManager" jdbcType="VARCHAR"/>
+        <result column="quantity" property="quantity" jdbcType="INTEGER"/>
+        <result column="un_quantity" property="unQuantity" jdbcType="INTEGER"/>
+        <result column="remark" property="remark" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+
+    <select id="queryByContIdAndProdId" parameterType="java.lang.String" resultType="java.lang.Long">
+        SELECT id
+        FROM contract_detail
+        WHERE cont_id = #{contId,jdbcType=BIGINT} and prod_id=#{prodId,jdbcType=BIGINT}
+    </select>
+
+    <select id="get" parameterType="java.lang.String" resultMap="contractDetailResultMap">
+        SELECT *
+        FROM contract_detail
+        WHERE id = #{id}
+    </select>
+
+    <select id="getByConId" parameterType="java.lang.String" resultMap="contractDetailResultMap">
+        SELECT *
+        FROM contract_detail
+        WHERE cont_id = #{contId}
+        order by prod_name
+    </select>
+
+    <select id="findList" resultMap="contractDetailResultMap">
+        SELECT *
+        FROM contract_detail
+    </select>
+
+    <select id="findAllList" resultMap="contractDetailResultMap">
+        SELECT *
+        FROM contract_detail
+    </select>
+
+    <insert id="insert" parameterType="com.hh.ssm.entity.ContractDetail">
+        INSERT INTO contract_detail(
+            id,
+            cont_id,
+            prod_id,
+            prod_code,
+            prod_type,
+            prod_unit,
+            prod_name,
+            specification,
+            quantity,
+            un_quantity,
+            remark,
+            prod_manager,
+            create_time
+        )
+        VALUES (
+            #{id,jdbcType=BIGINT},
+            #{contId,jdbcType=BIGINT},
+            #{prodId,jdbcType=BIGINT},
+            #{prodCode,jdbcType=VARCHAR},
+            #{prodType,jdbcType=CHAR},
+            #{prodUnit,jdbcType=VARCHAR},
+            #{prodName,jdbcType=VARCHAR},
+            #{specification,jdbcType=VARCHAR},
+            #{quantity,jdbcType=INTEGER},
+            #{unQuantity,jdbcType=INTEGER},
+            #{remark,jdbcType=VARCHAR},
+            #{prodManager,jdbcType=VARCHAR},
+            #{createTime,jdbcType=TIMESTAMP}
+        )
+    </insert>
+
+    <insert id="insertBatch" parameterType="com.hh.ssm.entity.ContractDetail">
+        INSERT INTO contract_detail(
+        id,
+        cont_id,
+        prod_id,
+        prod_type,
+        prod_code,
+        prod_name,
+        prod_unit,
+        quantity,
+        un_quantity,
+        specification,
+        prod_manager,
+        remark,
+        create_time
+        )
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.id,jdbcType=BIGINT},
+            #{item.contId,jdbcType=BIGINT},
+            #{item.prodId,jdbcType=BIGINT},
+            #{item.prodType,jdbcType=CHAR},
+            #{item.prodCode,jdbcType=VARCHAR},
+            #{item.prodName,jdbcType=VARCHAR},
+            #{item.prodUnit,jdbcType=VARCHAR},
+            #{item.quantity,jdbcType=INTEGER},
+            #{item.unQuantity,jdbcType=INTEGER},
+            #{item.specification,jdbcType=VARCHAR},
+            #{item.prodManager,jdbcType=VARCHAR},
+            #{item.remark,jdbcType=VARCHAR},
+            #{item.createTime,jdbcType=TIMESTAMP}
+            )
+        </foreach>
+    </insert>
+
+    <update id="update" parameterType="com.hh.ssm.entity.ContractDetail">
+        UPDATE contract_detail
+        SET
+        <if test="prodType!=null">
+            prod_type = #{prodType},
+        </if>
+
+        <if test="quantity!=null">
+            quantity = #{quantity},
+        </if>
+
+        <if test="prodCode!=null">
+            prod_code = #{prodCode},
+        </if>
+
+        <if test="specification!=null">
+            specification = #{specification},
+        </if>
+
+        <if test="prodUnit!=null">
+            prod_unit=#{prodUnit},
+        </if>
+
+        <if test="prodManager!=null">
+            prod_manager=#{prodManager},
+        </if>
+
+        <if test="remark!=null">
+            remark=#{remark},
+        </if>
+
+        <if test="updateTime!=null">
+            update_time = #{updateTime}
+        </if>
+
+        WHERE id = #{id}
+    </update>
+
+    <insert id="insertOrUpdateByBatch" parameterType="java.util.List">
+        insert into contract_detail (
+        id,
+        cont_id,
+        prod_id,
+        prod_type,
+        prod_code,
+        prod_unit,
+        remark,
+        prod_name,
+        quantity,
+        specification,
+        prod_manager,
+        remark,
+        un_quantity,
+        create_time
+        )
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.id,jdbcType=BIGINT},
+            #{item.contId,jdbcType=BIGINT},
+            #{item.prodId,jdbcType=BIGINT},
+            #{item.prodType,jdbcType=CHAR},
+            #{item.prodCode,jdbcType=VARCHAR},
+            #{item.prodUnit,jdbcType=VARCHAR},
+            #{item.remark,jdbcType=VARCHAR},
+            #{item.prodName,jdbcType=VARCHAR},
+            #{item.quantity,jdbcType=INTEGER},
+            #{item.specification,jdbcType=INTEGER},
+            #{item.prodManager,jdbcType=VARCHAR},
+            #{item.remark,jdbcType=VARCHAR},
+            #{item.unQuantity,jdbcType=INTEGER},
+            #{item.createTime,jdbcType=TIMESTAMP}
+            )
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        quantity=VALUES(quantity),
+        prod_unit=VALUES(prod_unit),
+        remark=VALUES(remark),
+        prod_code=VALUES(prod_code),
+        UPDATE_TIME=VALUES(UPDATE_TIME);
+    </insert>
+
+    <update id="updateBatchByIds" parameterType="java.util.List">
+        update contract_detail
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="quantity =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.quantity!=null">
+                        when id = #{i.id} then #{i.quantity}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="remark =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.remark!=null">
+                        when id = #{i.id} then #{i.remark}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="prod_unit =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.prodUnit!=null">
+                        when id = #{i.id} then #{i.prodUnit}
+                    </if>
+                </foreach>
+            </trim>
+
+            <trim prefix="UPDATE_TIME =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.updateTime!=null">
+                        when id = #{i.id} then #{i.updateTime}
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where
+        <foreach collection="list" separator="or" item="i" index="index">
+            id = #{i.id}
+        </foreach>
+
+    </update>
+
+
+
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM contract_detail
+        WHERE id = #{id,jdbcType=BIGINT}
+    </delete>
+
+    <update id="updateBatch" parameterType="java.util.List">
+        <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+            update contract_detail
+            set prod_manager = #{item.prodManager}
+            where cont_id = #{item.contId} and prod_code = #{item.prodCode} and specification = #{item.specification}
+        </foreach>
+    </update>
+
+    <select id="queryByIds" parameterType="java.util.List" resultMap="contractDetailResultMap">
+        select * from contract_detail where id in
+        <foreach item="id" collection="list" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getByContId" parameterType="java.lang.String" resultMap="contractDetailResultMap">
+        select * from contract_detail where id = #{id}
+        order by prod_name
+    </select>
+
+    <select id="check" parameterType="java.util.List" resultMap="contractDetailResultMap">
+        select * from contract_detail
+        where cont_id = #{item.contId} and prod_id = #{item.prodId} and un_quantity &lt; #{item.quantity}
+    </select>
+
+    <update id="out" parameterType="java.util.List">
+        <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+            update contract_detail
+            set un_quantity = #{item.unQuantity}
+            where cont_id = #{item.contId} and prod_id = #{item.prodId}
+        </foreach>
+    </update>
+
+</mapper>

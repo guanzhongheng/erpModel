@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hh.ssm.dao.RawOutInfoMapper">
+
+    <resultMap id="resultMap" type="com.hh.ssm.entity.RawOutInfo">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="rawmt_out_code" property="rawmtOutCode" jdbcType="VARCHAR"/>
+        <result column="applicant" property="applicant" jdbcType="VARCHAR"/>
+        <result column="status" property="status" jdbcType="CHAR"/>
+        <result column="create_time" property="applyDate" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="findById" parameterType="java.lang.Long" resultMap="resultMap">
+        select * from rawmt_out_info where id=#{id,jdbcType=BIGINT}
+    </select>
+
+    <select id="findList" resultMap="resultMap" parameterType="com.hh.ssm.entity.RawOutInfo">
+         select * from rawmt_out_info
+         <where>
+             <if test="applicant!=null">
+                 applicant = #{applicant,jdbcType=VARCHAR}
+             </if>
+             <if test="status!=null">
+                 and status = #{status,jdbcType=CHAR}
+             </if>
+         </where>
+    </select>
+
+    <update id="updateByselect" parameterType="com.hh.ssm.entity.RawOutInfo">
+        update rawmt_out_info
+        set
+        <if test="applicant!=null">
+            applicant = #{applicant,jdbcType=VARCHAR},
+        </if>
+        <if test="status!=null">
+            status = #{status,jdbcType=CHAR},
+        </if>
+        <if test="updateTime!=null">
+            update_time = #{updateTime,jdbcType=TIMESTAMP}
+        </if>
+        <where>
+            <if test="id!=null">
+                id = #{id,jdbcType=BIGINT}
+            </if>
+            <if test="rawmtOutCode!=null">
+                and rawmt_out_code = #{rawmtOutCode,jdbcType=VARCHAR}
+            </if>
+
+        </where>
+
+    </update>
+
+    <insert id="insert" parameterType="com.hh.ssm.entity.RawOutInfo">
+        insert into rawmt_out_info(
+        rawmt_out_code,
+        applicant,
+        status
+        )values (
+        #{rawmtOutCode,jdbcType=VARCHAR},
+        #{applicant,jdbcType=VARCHAR},
+        #{status,jdbcType=CHAR}
+        )
+    </insert>
+
+</mapper>

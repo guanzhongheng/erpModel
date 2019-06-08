@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hh.ssm.dao.DeliveryListMapper">
+
+    <resultMap id="deliveryListDetailResultMap" type="com.hh.ssm.entity.DeliveryListDetail">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="prod_id" property="prodId" jdbcType="BIGINT"/>
+        <result column="cont_id" property="contId" jdbcType="BIGINT"/>
+        <result column="quantity" property="quantity" jdbcType="INTEGER"/>
+        <result column="prod_unit" property="prodUnit" jdbcType="VARCHAR"/>
+        <result column="delivery_list_id" property="deliveryListId" jdbcType="BIGINT"/>
+    </resultMap>
+
+    <resultMap id="deliveryListDetailVOResultMap" type="com.hh.ssm.domain.vo.DeliveryListDetailVO">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="prod_id" property="prodId" jdbcType="BIGINT"/>
+        <result column="cont_id" property="contId" jdbcType="BIGINT"/>
+        <result column="quantity" property="quantity" jdbcType="INTEGER"/>
+        <result column="prod_unit" property="prodUnit" jdbcType="VARCHAR"/>
+        <result column="delivery_list_id" property="deliveryListId" jdbcType="BIGINT"/>
+    </resultMap>
+
+    <resultMap id="deliveryListVOResultMap" type="com.hh.ssm.domain.vo.DeliveryListVO">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="delivery_code" property="deliveryCode" jdbcType="VARCHAR"/>
+        <result column="delevey_date" property="deleveyDate" jdbcType="TIMESTAMP"/>
+        <result column="delevey_address" property="deleveyAddress" jdbcType="VARCHAR"/>
+        <result column="create_user" property="createUser" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="contracts" property="contracts" jdbcType="VARCHAR"/>
+        <result column="status" property="status" jdbcType="CHAR"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="action_user" property="actionUser" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="deliveryListResultMap" type="com.hh.ssm.entity.DeliveryList">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="delivery_code" property="deliveryCode" jdbcType="VARCHAR"/>
+        <result column="delevey_date" property="deleveyDate" jdbcType="TIMESTAMP"/>
+        <result column="delevey_address" property="deleveyAddress" jdbcType="VARCHAR"/>
+        <result column="create_user" property="createUser" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="contracts" property="contracts" jdbcType="VARCHAR"/>
+        <result column="status" property="status" jdbcType="CHAR"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="action_user" property="actionUser" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="findList" parameterType="com.hh.ssm.domain.vo.DeliveryListVO" resultMap="deliveryListVOResultMap">
+        SELECT dl.id, dl.delivery_code, dl.delevey_address, dl.delevey_date, dl.create_time,
+        (SELECT GROUP_CONCAT(c.code) FROM contract c WHERE FIND_IN_SET(c.id,dl.contracts)) as contracts
+        FROM delivery_list dl
+        <where>
+            <if test="(contracts != null)">
+                AND contracts LIKE CONCAT(CONCAT('%', #{contracts}), '%')
+            </if>
+        </where>
+        ORDER BY dl.delevey_date DESC
+    </select>
+
+    <select id="get" parameterType="java.lang.String" resultMap="deliveryListResultMap">
+        select * from delivery_list where delivery_code = #{deliveryCode}
+    </select>
+
+    <insert id="insert" parameterType="com.hh.ssm.entity.DeliveryList" useGeneratedKeys="true" keyProperty="id">
+        insert into delivery_list(delivery_code, delevey_date, delevey_address, create_user, create_time, contracts, status)
+        values(#{deliveryCode},#{deleveyDate},#{deleveyAddress},#{createUser},#{createTime},#{contracts}, #{status})
+    </insert>
+
+    <insert id="insertDetailBatch" useGeneratedKeys="true" parameterType="java.util.List">
+        <selectKey resultType="long" keyProperty="id" order="AFTER">
+            SELECT
+            LAST_INSERT_ID()
+        </selectKey>
+        INSERT INTO delivery_list_detail(prod_id,cont_id,quantity,prod_unit)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.prodId},#{item.contId},#{item.quantity},#{item.prodUnit})
+        </foreach>
+    </insert>
+
+    <select id="getDetailsById" parameterType="java.lang.String" resultMap="deliveryListDetailVOResultMap">
+        SELECT dld.*, c.name AS contName, c.code AS contCode, c.delevey_date as deleveyDate, p.code AS prodCode, p.name AS prodName, p.specification AS prodSpec
+        FROM delivery_list_detail dld
+        LEFT JOIN contract c ON dld.cont_id = c.id
+        LEFT JOIN product p ON dld.prod_id = p.id
+        WHERE delivery_list_id = #{id}
+    </select>
+
+    <select id="findListBySelect" parameterType="com.hh.ssm.domain.vo.DeliveryListVO"
+            resultMap="deliveryListVOResultMap">
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        dl.id,
+        dl.delivery_code,
+        dl.delevey_address,
+        dl.create_user,
+        dl.delevey_date,
+        dl.create_time,
+        ( SELECT GROUP_CONCAT( c.CODE ) FROM contract c WHERE FIND_IN_SET( c.id, dl.contracts ) ) AS contracts
+        FROM
+        delivery_list dl
+        <where>
+            <if test="status!=null">
+                and dl.`status` = #{status,jdbcType=CHAR}
+            </if>
+            <if test="createUser!=null">
+                and dl.`create_user` = #{createUser,jdbcType=CHAR}
+            </if>
+        </where>
+        ORDER BY
+        dl.delevey_date DESC
+        ) aa
+        <where>
+            <if test="(contracts != null)">
+                AND aa.contracts LIKE CONCAT(CONCAT('%', #{contracts}), '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="selectByDetailByDeliveryListId" parameterType="java.lang.Long" resultType="com.hh.ssm.domain.vo.DeliveryListDetailVO">
+        SELECT
+        dd.id,
+        dd.delivery_list_id deliveryListId,
+        dd.`code` prodCode,
+        dd.NAME prodName,
+        dd.specification prodSpec,
+        dd.quantity quantity,
+        iy.quantity invTotal,
+        iy.id invId,
+        iy.unit prodUnit
+    FROM
+        (
+        SELECT
+            dl.id,
+            dl.delivery_list_id,
+            dl.quantity,
+            pt.`code`,
+            pt.`name`,
+            pt.specification
+        FROM
+            delivery_list_detail dl
+            LEFT JOIN product pt ON dl.prod_id = pt.id
+            where dl.delivery_list_id=#{id,jdbcType=BIGINT}
+        ) dd
+	LEFT JOIN inventory iy ON iy.prod_code = dd.CODE
+    </select>
+
+    <update id="updateBySelect" parameterType="com.hh.ssm.entity.DeliveryList">
+        update delivery_list
+        set
+        <if test="deleveyDate!=null">
+            delevey_date=#{deleveyDate,jdbcType=TIMESTAMP},
+        </if>
+        <if test="deleveyAddress!=null">
+            delevey_address=#{deleveyAddress,jdbcType=VARCHAR},
+        </if>
+        <if test="createUser!=null">
+            create_user=#{createUser,jdbcType=VARCHAR},
+        </if>
+        <if test="contracts!=null">
+            contracts=#{contracts,jdbcType=VARCHAR},
+        </if>
+        <if test="status!=null">
+            status=#{status,jdbcType=CHAR},
+        </if>
+        <if test="actionUser!=null">
+            action_user=#{actionUser,jdbcType=VARCHAR},
+        </if>
+        <if test="updateTime!=null">
+            update_time=#{updateTime,jdbcType=VARCHAR}
+        </if>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+</mapper>

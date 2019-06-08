@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hh.ssm.dao.WarehourseDefectiveMapper">
+
+    <resultMap id="warehourseDefectiveResultMap" type="com.hh.ssm.entity.WarehourseDefective">
+        <id column="id" property="id" jdbcType="BIGINT"/> 
+        <result column="prod_id" property="prodId" jdbcType="BIGINT"/> 
+        <result column="prod_type" property="prodType" jdbcType="CHAR"/> 
+        <result column="quantity" property="quantity" jdbcType="INTEGER"/> 
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/> 
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/> 
+    </resultMap>
+
+
+    <select id="get" resultMap="warehourseDefectiveResultMap">
+        SELECT *
+        FROM warehourse_defective
+        WHERE id = #{id}
+    </select>
+
+    <select id="findList" resultMap="warehourseDefectiveResultMap">
+        SELECT *
+        FROM warehourse_defective
+        <where>
+        </where>
+    </select>
+
+    <select id="findAllList" resultMap="warehourseDefectiveResultMap">
+        SELECT *
+        FROM warehourse_defective
+    </select>
+
+    <insert id="insert" parameterType ="com.hh.ssm.entity.WarehourseDefective">
+        INSERT INTO warehourse_defective(
+            id,
+            prod_id,
+            prod_type,
+            quantity,
+            create_time,
+            update_time
+        )
+        VALUES (
+            #{id,jdbcType=BIGINT},
+            #{prodId,jdbcType=BIGINT},
+            #{prodType,jdbcType=CHAR},
+            #{quantity,jdbcType=INTEGER},
+            #{createTime,jdbcType=TIMESTAMP},
+            #{updateTime,jdbcType=TIMESTAMP}
+        )
+    </insert>
+
+    <insert id="insertBatch" parameterType="com.hh.ssm.entity.WarehourseDefective">
+        INSERT INTO warehourse_defective(
+            id,
+            prod_id,
+            prod_type,
+            quantity,
+            create_time,
+            update_time
+        )
+        VALUES
+        <foreach collection ="list" item="warehourseDefective" separator =",">
+        (
+            #{warehourseDefective.id,jdbcType=BIGINT},
+            #{warehourseDefective.prodId,jdbcType=BIGINT},
+            #{warehourseDefective.prodType,jdbcType=CHAR},
+            #{warehourseDefective.quantity,jdbcType=INTEGER},
+            #{warehourseDefective.createTime,jdbcType=TIMESTAMP},
+            #{warehourseDefective.updateTime,jdbcType=TIMESTAMP}
+        )
+        </foreach>
+    </insert>
+
+    <update id="update"  parameterType ="com.hh.ssm.entity.WarehourseDefective">
+        UPDATE warehourse_defective
+        SET
+        id = #{id},
+        prod_id = #{prodId},
+        prod_type = #{prodType},
+        quantity = #{quantity},
+        create_time = #{createTime},
+        update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete"  parameterType ="com.hh.ssm.entity.WarehourseDefective">
+        DELETE FROM warehourse_defective
+        WHERE id = #{id}
+    </delete>
+
+</mapper>

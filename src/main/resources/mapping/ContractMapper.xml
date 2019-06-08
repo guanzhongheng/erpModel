@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hh.ssm.dao.ContractMapper">
+
+    <resultMap id="contractResultMap" type="com.hh.ssm.entity.Contract">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="code" property="code" jdbcType="VARCHAR"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="manager" property="manager" jdbcType="VARCHAR"/>
+        <result column="sign_date" property="signDate" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="status" property="status" jdbcType="CHAR"/>
+        <result column="delevey_date" property="deleveyDate" jdbcType="VARCHAR"/>
+        <result column="attachment" property="attachment" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="contractVoResultMap" type="com.hh.ssm.domain.vo.ContractVo">
+        <id column="id" property="contId" jdbcType="BIGINT"/>
+        <result column="code" property="contCode" jdbcType="VARCHAR"/>
+        <result column="name" property="contName" jdbcType="VARCHAR"/>
+        <result column="manager" property="manager" jdbcType="VARCHAR"/>
+        <result column="sign_date" property="signDate" jdbcType="VARCHAR"/>
+        <result column="status" property="status" jdbcType="CHAR"/>
+        <result column="delevey_date" property="deleveyDate" jdbcType="VARCHAR"/>
+        <result column="attachment" property="attachment" jdbcType="VARCHAR"/>
+    </resultMap>
+
+
+    <select id="get" parameterType="java.lang.Long" resultMap="contractResultMap">
+        SELECT *
+        FROM contract
+        WHERE id = #{id}
+    </select>
+
+    <select id="findByConCode" parameterType="java.lang.String" resultMap="contractVoResultMap">
+        SELECT *
+        FROM contract
+        WHERE code = #{code,jdbcType=VARCHAR}
+    </select>
+
+    <select id="findList" parameterType="com.hh.ssm.domain.vo.ContractVo" resultMap="contractVoResultMap">
+        SELECT *
+        FROM contract
+        <where>
+            <if test="contCode!=null">
+                code LIKE concat(concat('%', #{contCode,jdbcType=VARCHAR}), '%')
+            </if>
+            <if test="contName!=null">
+                and name LIKE concat(concat('%', #{contName,jdbcType=VARCHAR}), '%')
+            </if>
+            <if test="manager!=null">
+                and manager LIKE concat(concat('%', #{manager,jdbcType=VARCHAR}), '%')
+            </if>
+            <if test="status!=null and status!='a'">
+                and status = #{status,jdbcType=CHAR}
+            </if>
+        </where>
+    </select>
+
+    <select id="findAllList" resultMap="contractVoResultMap">
+        SELECT *
+        FROM contract
+    </select>
+
+    <insert id="insert" parameterType="com.hh.ssm.entity.Contract">
+        <selectKey keyProperty="id" resultType="java.lang.Long" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        INSERT INTO contract(
+        id,
+        code,
+        name,
+        manager,
+        create_time,
+        status,
+        sign_date,
+        delevey_date,
+        attachment
+        )
+        VALUES (
+        #{id,jdbcType=BIGINT},
+        #{code,jdbcType=VARCHAR},
+        #{name,jdbcType=VARCHAR},
+        #{manager,jdbcType=VARCHAR},
+        #{createTime,jdbcType=TIMESTAMP},
+        #{status,jdbcType=CHAR},
+        #{signDate,jdbcType=VARCHAR},
+        #{deleveyDate,jdbcType=VARCHAR},
+        #{attachment,jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <insert id="insertBatch" parameterType="com.hh.ssm.entity.Contract">
+        INSERT INTO contract(
+        id,
+        code,
+        name,
+        manager,
+        create_time,
+        status,
+        delevey_date,
+        attachment
+        )
+        VALUES
+        <foreach collection="list" item="contract" separator=",">
+            (
+            #{contract.id,jdbcType=BIGINT},
+            #{contract.code,jdbcType=VARCHAR},
+            #{contract.name,jdbcType=VARCHAR},
+            #{contract.manager,jdbcType=VARCHAR},
+            #{contract.createTime,jdbcType=TIMESTAMP},
+            #{contract.status,jdbcType=CHAR},
+            #{contract.deleveyDate,jdbcType=TIMESTAMP},
+            #{contract.attachment,jdbcType=VARCHAR}
+            )
+        </foreach>
+    </insert>
+
+    <update id="update" parameterType="com.hh.ssm.entity.Contract">
+        UPDATE contract
+        <set>
+            <if test="code != null">
+                code = #{code,jdbcType=VARCHAR},
+            </if>
+            <if test="name != null">
+                name = #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="manager != null">
+                manager = #{manager,jdbcType=VARCHAR},
+            </if>
+            <if test="attachment != null">
+                attachment = #{attachment,jdbcType=VARCHAR},
+            </if>
+            <if test="status != null">
+                status = #{status,jdbcType=CHAR},
+            </if>
+            <if test="deleveyDate != null">
+                delevey_date = #{deleveyDate,jdbcType=VARCHAR},
+            </if>
+            <if test="signDate != null">
+                sign_date = #{signDate,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null">
+                UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String">
+        DELETE FROM contract
+        WHERE id = #{id}
+    </delete>
+
+    <!-- 批量删除 -->
+    <delete id="deleteBatch">
+        DELETE
+        FROM
+        contract
+        WHERE
+        contract.id IN
+        <foreach collection="list" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <update id="updateStatusById" parameterType="java.lang.Long">
+        update contract set status = '2' where id = #{id}
+    </update>
+
+</mapper>

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hh.ssm.dao.SemiProductMapper">
+
+    <resultMap id="semiProductResultMap" type="com.hh.ssm.entity.SemiProduct">
+        <id column="id" property="id" jdbcType="BIGINT"/> 
+        <result column="name" property="name" jdbcType="VARCHAR"/> 
+        <result column="code" property="code" jdbcType="VARCHAR"/> 
+        <result column="specification" property="specification" jdbcType="VARCHAR"/> 
+        <result column="tickness" property="tickness" jdbcType="VARCHAR"/> 
+        <result column="inner_resin" property="innerResin" jdbcType="VARCHAR"/> 
+        <result column="structural_resin" property="structuralResin" jdbcType="VARCHAR"/> 
+        <result column="outer_resin" property="outerResin" jdbcType="VARCHAR"/> 
+        <result column="attachment" property="attachment" jdbcType="VARCHAR"/> 
+        <result column="raw_material_cons" property="rawMaterialCons" jdbcType="VARCHAR"/> 
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/> 
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/> 
+    </resultMap>
+
+
+    <select id="get" resultMap="semiProductResultMap">
+        SELECT *
+        FROM semi_product
+        WHERE id = #{id}
+    </select>
+
+    <select id="findList" resultMap="semiProductResultMap">
+        SELECT *
+        FROM semi_product
+        <where>
+            <if test="(code != null)">
+                and code like concat(concat('%', #{code}), '%')
+            </if>
+            <if test="(name != null)">
+                and name like concat(concat('%', #{name}), '%')
+            </if>
+            <if test="(specification != null)">
+                and specification like concat(concat('%', #{specification}), '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="findAllList" resultMap="semiProductResultMap">
+        SELECT *
+        FROM semi_product
+    </select>
+
+    <insert id="insert" parameterType ="com.hh.ssm.entity.SemiProduct">
+        INSERT INTO semi_product(
+            name,
+            code,
+            specification,
+            tickness,
+            inner_resin,
+            structural_resin,
+            outer_resin,
+            attachment,
+            raw_material_cons,
+            create_time
+        )
+        VALUES (
+            #{name,jdbcType=VARCHAR},
+            #{code,jdbcType=VARCHAR},
+            #{specification,jdbcType=VARCHAR},
+            #{tickness,jdbcType=VARCHAR},
+            #{innerResin,jdbcType=VARCHAR},
+            #{structuralResin,jdbcType=VARCHAR},
+            #{outerResin,jdbcType=VARCHAR},
+            #{attachment,jdbcType=VARCHAR},
+            #{rawMaterialCons,jdbcType=VARCHAR},
+            #{createTime,jdbcType=TIMESTAMP}
+        )
+    </insert>
+
+    <insert id="insertBatch" parameterType="com.hh.ssm.entity.SemiProduct">
+        <selectKey resultType="long" keyProperty="id" order="AFTER">
+            SELECT
+            LAST_INSERT_ID()
+        </selectKey>
+        INSERT INTO semi_product(
+            name,
+            code,
+            specification,
+            tickness,
+            inner_resin,
+            structural_resin,
+            outer_resin,
+            attachment,
+            raw_material_cons,
+            create_time
+        )
+        VALUES
+        <foreach collection ="list" item="semiProduct" index="index" separator =",">
+        (
+            #{semiProduct.name,jdbcType=VARCHAR},
+            #{semiProduct.code,jdbcType=VARCHAR},
+            #{semiProduct.specification,jdbcType=VARCHAR},
+            #{semiProduct.tickness,jdbcType=VARCHAR},
+            #{semiProduct.innerResin,jdbcType=VARCHAR},
+            #{semiProduct.structuralResin,jdbcType=VARCHAR},
+            #{semiProduct.outerResin,jdbcType=VARCHAR},
+            #{semiProduct.attachment,jdbcType=VARCHAR},
+            #{semiProduct.rawMaterialCons,jdbcType=VARCHAR},
+            #{semiProduct.createTime,jdbcType=TIMESTAMP}
+        )
+        </foreach>
+    </insert>
+
+    <update id="update"  parameterType ="com.hh.ssm.entity.SemiProduct">
+        UPDATE semi_product
+        SET
+        tickness = #{tickness},
+        inner_resin = #{innerResin},
+        structural_resin = #{structuralResin},
+        outer_resin = #{outerResin},
+        attachment = #{attachment},
+        raw_material_cons = #{rawMaterialCons},
+        update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete"  parameterType ="com.hh.ssm.entity.SemiProduct">
+        DELETE FROM semi_product
+        WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteBatch" parameterType="java.util.List">
+        delete from semi_product where id in
+        <foreach item="id" collection="list" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="findListByIds" parameterType="java.util.List" resultMap="semiProductResultMap">
+        select * from semi_product where id in
+        <foreach item="id" collection="list" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+</mapper>

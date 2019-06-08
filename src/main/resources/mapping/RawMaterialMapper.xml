@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hh.ssm.dao.RawMaterialMapper">
+
+    <resultMap id="rawMaterialResultMap" type="com.hh.ssm.entity.RawMaterial">
+        <id column="id" property="id" jdbcType="BIGINT"/> 
+        <result column="name" property="name" jdbcType="VARCHAR"/> 
+        <result column="code" property="code" jdbcType="VARCHAR"/> 
+        <result column="supplier" property="supplier" jdbcType="VARCHAR"/>
+        <result column="attachment" property="attachment" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/> 
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/> 
+    </resultMap>
+
+
+    <select id="get" resultMap="rawMaterialResultMap">
+        SELECT *
+        FROM raw_material
+        WHERE id = #{id}
+    </select>
+
+    <select id="findList" resultMap="rawMaterialResultMap">
+        SELECT *
+        FROM raw_material
+        <where>
+            <if test="code != null">
+                and code like concat(concat('%', #{code}), '%')
+            </if>
+            <if test="name != null">
+                and name like concat(concat('%', #{name}), '%')
+            </if>
+            <if test="supplier != null">
+                and supplier like concat(concat('%', #{supplier}), '%')
+            </if>
+        </where>
+    </select>
+
+
+    <select id="findAllList" resultMap="rawMaterialResultMap">
+        SELECT *
+        FROM raw_material
+    </select>
+
+    <insert id="insert" parameterType ="com.hh.ssm.entity.RawMaterial">
+        <selectKey keyProperty="id" resultType="java.lang.Long" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        INSERT INTO raw_material(
+            name,
+            code,
+            supplier,
+            attachment,
+            create_time
+        )
+        VALUES (
+            #{name,jdbcType=VARCHAR},
+            #{code,jdbcType=VARCHAR},
+            #{supplier,jdbcType=VARCHAR},
+            #{attachment,jdbcType=VARCHAR},
+            #{createTime,jdbcType=TIMESTAMP}
+        )
+    </insert>
+
+    <insert id="insertBatch" parameterType="com.hh.ssm.entity.RawMaterial">
+        <selectKey resultType="long" keyProperty="id" order="AFTER">
+            SELECT
+            LAST_INSERT_ID()
+        </selectKey>
+        INSERT INTO raw_material(
+            name,
+            code,
+            supplier,
+            attachment,
+            create_time
+        )
+        VALUES
+        <foreach collection ="list" item="rawMaterial" index="index" separator =",">
+        (
+            #{rawMaterial.name,jdbcType=VARCHAR},
+            #{rawMaterial.code,jdbcType=VARCHAR},
+            #{rawMaterial.supplier,jdbcType=VARCHAR},
+            #{rawMaterial.attachment,jdbcType=VARCHAR},
+            #{rawMaterial.createTime,jdbcType=TIMESTAMP}
+        )
+        </foreach>
+    </insert>
+
+    <update id="update"  parameterType ="com.hh.ssm.entity.RawMaterial">
+        UPDATE raw_material
+        SET
+        attachment = #{attachment},
+        update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete"  parameterType ="com.hh.ssm.entity.RawMaterial">
+        DELETE FROM raw_material
+        WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteBatch" parameterType="java.util.List">
+        delete from raw_material where id in
+        <foreach item="id" collection="list" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="findListByIds" parameterType="java.util.List" resultMap="rawMaterialResultMap">
+        select * from raw_material where id in
+        <foreach item="id" collection="list" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="find" parameterType ="com.hh.ssm.entity.RawMaterial" resultMap="rawMaterialResultMap">
+        select * from raw_material where code = #{code} and name = #{name} and supplier = #{supplier}
+    </select>
+
+</mapper>

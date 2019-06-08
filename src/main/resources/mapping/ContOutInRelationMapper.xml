@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hh.ssm.dao.ContOutInRelationMapper">
+    <resultMap id="resultMap" type="com.hh.ssm.entity.ContOutInRelation">
+        <id column="relation_id" property="relationId" jdbcType="BIGINT"/>
+        <result column="con_detail_id" property="conDetailId" jdbcType="BIGINT"/>
+        <result column="out_in_id" property="outInId" jdbcType="BIGINT"/>
+        <result column="relation_status" property="relationStatus" jdbcType="CHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.hh.ssm.entity.ContOutInRelation">
+        INSERT INTO cont_out_in_ralation(
+            relation_id,
+            con_detail_id,
+            out_in_id,
+            relation_status,
+            create_time,
+            update_time
+        )
+        VALUES (
+            #{relationId,jdbcType=BIGINT},
+            #{conDetailId,jdbcType=BIGINT},
+            #{outInId,jdbcType=BIGINT},
+            #{relationStatus,jdbcType=CHAR},
+            #{createTime,jdbcType=TIMESTAMP},
+            #{createTime,jdbcType=TIMESTAMP}
+        )
+    </insert>
+</mapper>
